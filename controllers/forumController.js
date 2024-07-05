@@ -199,11 +199,60 @@ function formatQuestionTimestamp(question) {
     }
 }
 
+async function createComment(req, res, next) {
+    const { questionId } = req.params;
+    const { username, text } = req.body; // Mengambil username dan text dari body permintaan
+
+    const db = getDB();
+    const comment = { _id: new ObjectId(), username, text, createdAt: new Date() };
+
+    try {
+        const result = await db.collection('questions').updateOne(
+            { _id: new ObjectId(questionId) },
+            { $push: { comments: comment } }
+        );
+
+        if (result.modifiedCount > 0) {
+            res.json({ message: 'Comment added successfully', comment });
+        } else {
+            throw new Error('Failed to add comment to question');
+        }
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).json({ error: 'Failed to add comment' });
+    }
+}
+
+async function getCommentsByPostId(req, res, next) {
+    const { questionId } = req.params;
+
+    try {
+        const db = getDB();
+        const question = await db.collection('questions').findOne({ _id: new ObjectId(questionId) });
+
+        if (question) {
+            res.json({ comments: question.comments });
+        } else {
+            res.status(404).json({ error: 'Question not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+        res.status(500).json({ error: 'Failed to fetch comments' });
+    }
+}
+
+
+  
+
+
 module.exports = {
     getAllQuestions,
     createQuestion,
     getPopularTags,
     searchQuestions,
     getQuestionById,
-    getDiscussionsByTag
+    getDiscussionsByTag,
+    createComment,
+    getCommentsByPostId
+
 };
