@@ -12,7 +12,8 @@ const {
     getQuestionById,
     getDiscussionsByTag,
     createComment,
-    getCommentsByPostId
+    getCommentsByPostId,
+    createReply
 } = require('./controllers/forumController');
 
 const app = express();
@@ -49,6 +50,7 @@ connectDB().then(() => {
     app.get('/tags/:tagName', getDiscussionsByTag);
     app.post('/questions/:questionId/comments', createComment);
     app.get('/questions/:questionId/comments', getCommentsByPostId);
+    app.post('/questions/:questionId/comments/:commentId/replies', createReply);
 
     // Static files (example: uploaded images)
     app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

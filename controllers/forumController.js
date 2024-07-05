@@ -2,23 +2,34 @@ const { ObjectId } = require('mongodb');
 const getDB = require('../db').getDB;
 const moment = require('moment');
 
+// Function to format timestamp to "x time ago"
+function formatTimestamp(timestamp) {
+    const now = moment();
+    const createdAt = moment(timestamp);
+    const diffMinutes = now.diff(createdAt, 'minutes');
+    
+    if (diffMinutes < 60) {
+        return `${diffMinutes} menit yang lalu`;
+    } else {
+        const diffHours = now.diff(createdAt, 'hours');
+        return `${diffHours} jam yang lalu`;
+    }
+}
+
 async function getAllQuestions(req, res, next) {
     const { sort, page = 1, perPage = 10 } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(perPage); // Hitung jumlah data yang akan dilewati
-    const limit = parseInt(perPage); // Jumlah data per halaman
+    const skip = (parseInt(page) - 1) * parseInt(perPage);
+    const limit = parseInt(perPage);
 
     try {
-        const db = getDB(); // Mendapatkan koneksi database
-        
-        let sortOptions = { createdAt: -1 }; // Default: urutkan berdasarkan terbaru
+        const db = getDB();
+        let sortOptions = { createdAt: -1 };
+
         if (sort === 'oldest') {
-            sortOptions = { createdAt: 1 }; // Jika sort === 'oldest', urutkan berdasarkan terlama
+            sortOptions = { createdAt: 1 };
         }
 
-        // Menghitung jumlah total pertanyaan
         const totalQuestions = await db.collection('questions').countDocuments();
-
-        // Menghitung jumlah halaman
         const totalPages = Math.ceil(totalQuestions / perPage);
 
         const questions = await db.collection('questions')
@@ -28,7 +39,11 @@ async function getAllQuestions(req, res, next) {
             .limit(limit)
             .toArray();
 
-        const formattedQuestions = questions.map(question => formatQuestionTimestamp(question)); // Format timestamp
+        const formattedQuestions = questions.map(question => ({
+            ...question,
+            formattedCreatedAt: formatTimestamp(question.createdAt)
+        }));
+
         res.json({ 
             message: "Successfully fetched questions", 
             questions: formattedQuestions, 
@@ -41,30 +56,27 @@ async function getAllQuestions(req, res, next) {
     }
 }
 
-
-
 async function createQuestion(req, res, next) {
     const { title, description, tags } = req.body;
-    const tagsArray = tags.split(' ').filter(tag => tag.trim() !== ''); // Split string into array based on space and filter out empty strings
-    
-    // Pastikan imageUrl diambil dari file yang diunggah (jika ada)
+    const tagsArray = tags.split(' ').filter(tag => tag.trim() !== '');
     let imageUrl;
+
     if (req.file) {
-        imageUrl = req.file.path; // Path tempat gambar disimpan
+        imageUrl = req.file.path;
     }
 
     try {
-        const db = getDB(); // Mendapatkan koneksi database
+        const db = getDB();
         const result = await db.collection('questions').insertOne({ 
             title, 
             description, 
             tags: tagsArray, 
-            imageUrl, // Simpan path gambar di sini
+            imageUrl,
             createdAt: new Date() 
         });
         
         if (result.insertedId) {
-            const createdAt = new Date(); // Waktu pembuatan
+            const createdAt = new Date();
             const question = { 
                 _id: result.insertedId, 
                 title, 
@@ -73,7 +85,10 @@ async function createQuestion(req, res, next) {
                 imageUrl, 
                 createdAt 
             };
-            const formattedQuestion = formatQuestionTimestamp(question); // Format timestamp
+            const formattedQuestion = {
+                ...question,
+                formattedCreatedAt: formatTimestamp(question.createdAt)
+            };
             res.json({ message: "Question created successfully", question: formattedQuestion });
         } else {
             throw new Error('Failed to insert question');
@@ -84,11 +99,9 @@ async function createQuestion(req, res, next) {
     }
 }
 
-
-
 async function getPopularTags(req, res, next) {
     try {
-        const db = getDB(); // Mendapatkan koneksi database
+        const db = getDB();
         const pipeline = [
             { $unwind: "$tags" },
             { $group: { _id: "$tags", count: { $sum: 1 } } },
@@ -100,7 +113,7 @@ async function getPopularTags(req, res, next) {
         const popularTags = result.map(tag => ({
             name: tag._id,
             count: tag.count,
-            link: `/tags/${encodeURIComponent(tag._id)}` // Link ke halaman atau endpoint terkait tag
+            link: `/tags/${encodeURIComponent(tag._id)}`
         }));
 
         res.json({ message: "Successfully fetched popular tags", tags: popularTags });
@@ -112,24 +125,21 @@ async function getPopularTags(req, res, next) {
 
 async function getDiscussionsByTag(req, res, next) {
     const { tagName } = req.params;
-    const page = parseInt(req.query.page) || 1; // Ambil nilai halaman dari query, default: halaman 1
-    const pageSize = parseInt(req.query.pageSize) || 10; // Ambil ukuran halaman dari query, default: 10
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
 
     try {
-        const db = getDB(); // Dapatkan koneksi database
-        const skip = (page - 1) * pageSize; // Hitung nilai skip berdasarkan halaman dan ukuran halaman
+        const db = getDB();
+        const skip = (page - 1) * pageSize;
         
-        // Query untuk mendapatkan jumlah total data
         const countQuery = await db.collection('questions').find({ tags: tagName }).count();
         
-        // Query untuk mendapatkan data dengan pagination
         const discussions = await db.collection('questions')
             .find({ tags: tagName })
             .skip(skip)
             .limit(pageSize)
             .toArray();
 
-        // Menghitung total halaman berdasarkan jumlah total data dan ukuran halaman
         const totalPages = Math.ceil(countQuery / pageSize);
 
         res.json({ 
@@ -145,12 +155,11 @@ async function getDiscussionsByTag(req, res, next) {
     }
 }
 
-
 async function searchQuestions(req, res, next) {
     const { keyword } = req.query;
     try {
-        const db = getDB(); // Mendapatkan koneksi database
-        const regex = new RegExp(keyword, 'i'); // Regex untuk pencarian case-insensitive
+        const db = getDB();
+        const regex = new RegExp(keyword, 'i');
 
         const results = await db.collection('questions').find({
             $or: [
@@ -159,7 +168,11 @@ async function searchQuestions(req, res, next) {
             ]
         }).toArray();
 
-        const formattedResults = results.map(question => formatQuestionTimestamp(question)); // Format timestamp
+        const formattedResults = results.map(question => ({
+            ...question,
+            formattedCreatedAt: formatTimestamp(question.createdAt)
+        }));
+
         res.json({ message: `Successfully fetched search results for "${keyword}"`, results: formattedResults });
     } catch (error) {
         console.error(`Error searching questions for "${keyword}" from MongoDB:`, error);
@@ -170,11 +183,14 @@ async function searchQuestions(req, res, next) {
 async function getQuestionById(req, res, next) {
     const { id } = req.params;
     try {
-        const db = getDB(); // Mendapatkan koneksi database
+        const db = getDB();
         const question = await db.collection('questions').findOne({ _id: new ObjectId(id) });
         
         if (question) {
-            const formattedQuestion = formatQuestionTimestamp(question); // Format timestamp
+            const formattedQuestion = {
+                ...question,
+                formattedCreatedAt: formatTimestamp(question.createdAt)
+            };
             res.json({ message: "Successfully fetched question details", question: formattedQuestion });
         } else {
             res.status(404).json({ error: "Question not found" });
@@ -185,41 +201,40 @@ async function getQuestionById(req, res, next) {
     }
 }
 
-// Function to format timestamp to "x time ago"
-function formatQuestionTimestamp(question) {
-    const now = moment();
-    const createdAt = moment(question.createdAt);
-    const diffMinutes = now.diff(createdAt, 'minutes');
-    
-    if (diffMinutes < 60) {
-        return { ...question, formattedCreatedAt: `${diffMinutes} menit yang lalu` };
-    } else {
-        const diffHours = now.diff(createdAt, 'hours');
-        return { ...question, formattedCreatedAt: `${diffHours} jam yang lalu` };
-    }
-}
-
 async function createComment(req, res, next) {
     const { questionId } = req.params;
-    const { username, text } = req.body; // Mengambil username dan text dari body permintaan
+    const { username, text, parentId } = req.body;
 
     const db = getDB();
     const comment = { _id: new ObjectId(), username, text, createdAt: new Date() };
 
     try {
-        const result = await db.collection('questions').updateOne(
-            { _id: new ObjectId(questionId) },
-            { $push: { comments: comment } }
-        );
+        if (parentId) {
+            const result = await db.collection('questions').updateOne(
+                { _id: new ObjectId(questionId), "comments._id": new ObjectId(parentId) },
+                { $push: { "comments.$.replies": comment } }
+            );
 
-        if (result.modifiedCount > 0) {
-            res.json({ message: 'Comment added successfully', comment });
+            if (result.modifiedCount > 0) {
+                res.json({ message: 'Reply added successfully', comment });
+            } else {
+                throw new Error('Failed to add reply to comment');
+            }
         } else {
-            throw new Error('Failed to add comment to question');
+            const result = await db.collection('questions').updateOne(
+                { _id: new ObjectId(questionId) },
+                { $push: { comments: comment } }
+            );
+
+            if (result.modifiedCount > 0) {
+                res.json({ message: 'Comment added successfully', comment });
+            } else {
+                throw new Error('Failed to add comment to question');
+            }
         }
     } catch (error) {
-        console.error('Error adding comment:', error);
-        res.status(500).json({ error: 'Failed to add comment' });
+        console.error('Error adding comment or reply:', error);
+        res.status(500).json({ error: 'Failed to add comment or reply' });
     }
 }
 
@@ -231,7 +246,16 @@ async function getCommentsByPostId(req, res, next) {
         const question = await db.collection('questions').findOne({ _id: new ObjectId(questionId) });
 
         if (question) {
-            res.json({ comments: question.comments });
+            const comments = question.comments.map(comment => ({
+                ...comment,
+                formattedCreatedAt: formatTimestamp(comment.createdAt),
+                replies: comment.replies ? comment.replies.map(reply => ({
+                    ...reply,
+                    formattedCreatedAt: formatTimestamp(reply.createdAt)
+                })) : []
+            }));
+
+            res.json({ comments });
         } else {
             res.status(404).json({ error: 'Question not found' });
         }
@@ -241,9 +265,37 @@ async function getCommentsByPostId(req, res, next) {
     }
 }
 
+async function createReply(req, res, next) {
+    const { questionId, commentId } = req.params;
+    const { username, text } = req.body;
+    const reply = { username, text, createdAt: new Date() };
 
-  
+    try {
+        const db = getDB();
+        const result = await db.collection('questions').updateOne(
+            { 
+                _id: new ObjectId(questionId), 
+                'comments._id': new ObjectId(commentId) 
+            },
+            { 
+                $push: { 'comments.$.replies': reply } 
+            }
+        );
 
+        if (result.modifiedCount > 0) {
+            const formattedReply = {
+                ...reply,
+                formattedCreatedAt: formatTimestamp(reply.createdAt)
+            };
+            res.json({ message: 'Reply added successfully', reply: formattedReply });
+        } else {
+            res.status(404).json({ error: 'Comment not found' });
+        }
+    } catch (error) {
+        console.error('Error adding reply:', error);
+        res.status(500).json({ error: 'Failed to add reply' });
+    }
+}
 
 module.exports = {
     getAllQuestions,
@@ -253,6 +305,7 @@ module.exports = {
     getQuestionById,
     getDiscussionsByTag,
     createComment,
-    getCommentsByPostId
+    getCommentsByPostId,
+    createReply
 
 };
