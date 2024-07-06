@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const multer = require('multer');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 const cors = require('cors'); // Tambahkan ini
 const { connectDB } = require('./db');
 const {
@@ -34,6 +36,12 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+// Load file YAML
+const swaggerDocument = YAML.load(path.join(__dirname, 'api-docs.yaml'));
+
+// Setup middleware untuk Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Connect to MongoDB
 connectDB().then(() => {

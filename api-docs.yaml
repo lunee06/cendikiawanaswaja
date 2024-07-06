@@ -1,0 +1,401 @@
+openapi: 3.0.0
+info:
+  title: Cendikiawan Aswaja
+  description: API Documentation for Cendikiawan Aswaja Application
+  version: 1.0.0
+
+servers:
+  - url: http://34.45.189.129:3000
+
+paths:
+  /:
+    get:
+      summary: Welcome Message
+      tags:
+        - forum features
+      responses:
+        '200':
+          description: A welcome message from the API
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Welcome to the Forum API
+
+  /questions:
+    get:
+      summary: Get all questions
+      tags:
+        - forum features
+      parameters:
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [latest, oldest]
+          description: Sort order for questions
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Page number
+        - in: query
+          name: perPage
+          schema:
+            type: integer
+            example: 10
+          description: Number of questions per page
+      responses:
+        '200':
+          description: Successfully fetched questions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successfully fetched questions
+                  questions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Question'
+                  currentPage:
+                    type: integer
+                    example: 1
+                  totalPages:
+                    type: integer
+                    example: 3
+
+    post:
+      summary: Create a new question
+      tags:
+        - forum features
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: How to use Swagger?
+                description:
+                  type: string
+                  example: Can someone explain how to use Swagger for API documentation?
+                tags: 
+                  type: string
+                  example: swagger documentation
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Question created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Question created successfully
+                  question:
+                    $ref: '#/components/schemas/Question'
+
+  /tags/popular:
+    get:
+      summary: Get popular tags
+      tags:
+        - forum features
+      responses:
+        '200':
+          description: Successfully fetched popular tags
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successfully fetched popular tags
+                  tags:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tag'
+
+  /search:
+    get:
+      summary: Search questions
+      tags:
+        - forum features
+      parameters:
+        - in: query
+          name: keyword
+          schema:
+            type: string
+          required: true
+          description: Keyword to search in question titles and descriptions
+      responses:
+        '200':
+          description: Successfully fetched search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successfully fetched search results
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Question'
+
+  /questions/{id}:
+    get:
+      summary: Get question by ID
+      tags:
+        - forum features
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Question ID
+      responses:
+        '200':
+          description: Successfully fetched question details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successfully fetched question details
+                  question:
+                    $ref: '#/components/schemas/Question'
+        '404':
+          description: Question not found
+
+  /tags/{tagName}:
+    get:
+      summary: Get discussions by tag name
+      tags:
+        - forum features
+      parameters:
+        - in: path
+          name: tagName
+          required: true
+          schema:
+            type: string
+          description: Tag name to filter discussions
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Page number
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            example: 10
+          description: Number of discussions per page
+      responses:
+        '200':
+          description: Successfully fetched discussions for a tag
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successfully fetched discussions for tag "swagger"
+                  discussions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Question'
+
+  /questions/{questionId}/comments:
+    post:
+      summary: Add a comment to a question
+      tags:
+        - forum features
+      parameters:
+        - in: path
+          name: questionId
+          required: true
+          schema:
+            type: string
+          description: Question ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: JohnDoe
+                text:
+                  type: string
+                  example: Great question!
+                parentId:
+                  type: string
+                  example: 5ffea7a1b6a9cf001e7f7b25
+                  description: Optional ID of parent comment if replying
+      responses:
+        '200':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Comment added successfully
+                  comment:
+                    $ref: '#/components/schemas/Comment'
+
+  /questions/{questionId}/comments:
+    get:
+      summary: Get comments for a question
+      tags:
+        - forum features
+      parameters:
+        - in: path
+          name: questionId
+          required: true
+          schema:
+            type: string
+          description: Question ID
+      responses:
+        '200':
+          description: Successfully fetched comments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+
+  /questions/{questionId}/comments/{commentId}/replies:
+    post:
+      summary: Add a reply to a comment
+      tags:
+        - forum features
+      parameters:
+        - in: path
+          name: questionId
+          required: true
+          schema:
+            type: string
+          description: Question ID
+        - in: path
+          name: commentId
+          required: true
+          schema:
+            type: string
+          description: Comment ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: JaneDoe
+                text:
+                  type: string
+                  example: I agree!
+      responses:
+        '200':
+          description: Reply added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Reply added successfully
+                  reply:
+                    $ref: '#/components/schemas/Comment'
+
+components:
+  schemas:
+    Question:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 5ffea7a1b6a9cf001e7f7b25
+        title:
+          type: string
+          example: How to use Swagger?
+        description:
+          type: string
+          example: Can someone explain how to use Swagger for API documentation?
+        tags:
+          type: array
+          items:
+            type: string
+            example: swagger documentation
+        imageUrl:
+          type: string
+          example: /uploads/1648912512345-swagger.png
+        createdAt:
+          type: string
+          format: date-time
+        formattedCreatedAt:
+          type: string
+          example: 1 hour ago
+
+    Comment:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 5ffea7a1b6a9cf001e7f7b25
+        username:
+          type: string
+          example: JohnDoe
+        text:
+          type: string
+          example: Great question!
+        createdAt:
+          type: string
+          format: date-time
+        formattedCreatedAt:
+          type: string
+          example: 1 hour ago
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    Tag:
+      type: object
+      properties:
+        name:
+          type: string
+          example: swagger
+        count:
+          type: integer
+          example: 10
+        link:
+          type: string
+          example: /tags/swagger
