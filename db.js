@@ -1,34 +1,22 @@
 // db.js
-const { MongoClient } = require('mongodb');
 
-const url = 'mongodb+srv://andis:andis@cluster0.vkduecp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const mongoose = require('mongoose');
+
+const url = 'mongodb+srv://andis:andis@cluster0.vkduecp.mongodb.net/?retryWrites=true&w=majority';
 const dbName = 'forumdb'; // Sesuaikan dengan nama database Anda
 
-let db = null;
-
 async function connectDB() {
-    if (db) return db;
-
-    try {
-        const client = await MongoClient.connect(url, {
-        });
-        db = client.db(dbName);
-        console.log('MongoDB Connected:', url);
-        return db;
-    } catch (error) {
-        console.error('Error connecting to MongoDB:', error);
-        throw error;
-    }
+  try {
+    await mongoose.connect(url, {
+      dbName: dbName,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('MongoDB Connected:', url);
+  } catch (error) {
+    console.error('Error connecting to MongoDB:', error.message);
+    process.exit(1); // Exit process with failure
+  }
 }
 
-function getDB() {
-    if (!db) {
-        throw new Error('Database not initialized. Call connectDB first.');
-    }
-    return db;
-}
-
-module.exports = {
-    connectDB,
-    getDB
-};
+module.exports = connectDB;
