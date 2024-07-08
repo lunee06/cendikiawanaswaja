@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Poppins } from 'next/font/google'; // Import Poppins font
+import { forgotPassword } from '../../utils/api'; // Import forgotPassword function
 
 // Konfigurasi font Poppins dengan subset Latin dan display swap
 const poppinsRegular = Poppins({
@@ -15,10 +16,25 @@ const poppinsBold = Poppins({
 });
 
 const ForgotPasswordForm = () => {
-  const handleSubmit = (e) => {
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Lakukan logika pengiriman email reset password
-    alert('Link reset password telah dikirimkan ke email Anda.');
+
+    try {
+      // Call forgotPassword function with email state
+      await forgotPassword(email);
+      // Clear email input and set success message
+      setEmail('');
+      setMessage('Link reset password telah dikirimkan ke email Anda.');
+      setError('');
+    } catch (error) {
+      // Handle error response from API
+      setMessage('');
+      setError(error);
+    }
   };
 
   return (
@@ -33,10 +49,20 @@ const ForgotPasswordForm = () => {
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label htmlFor="email" className={`block text-sm font-medium text-gray-700 mb-1 ${poppinsRegular.className}`}>Email</label>
-              <input id="email" name="email" type="email" required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 ${poppinsRegular.className}`} />
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 ${poppinsRegular.className}`}
+              />
             </div>
             <button type="submit" className={`w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300 ${poppinsBold.className}`}>Kirim Link Reset Password</button>
           </form>
+          {message && <p className="text-green-500 mt-2">{message}</p>}
+          {error && <p className="text-red-500 mt-2">{error}</p>}
           <p className={`text-gray-600 text-center mt-4 ${poppinsRegular.className}`}>Kembali ke <a href="/sign-in" className={`text-blue-500 hover:underline ${poppinsRegular.className}`}>Halaman Masuk</a></p>
         </div>
       </div>

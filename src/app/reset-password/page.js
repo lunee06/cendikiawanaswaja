@@ -1,14 +1,13 @@
 'use client';
-
-import RegisterForm from './RegisterForm';
+import ResetPassword from "./ResetPasswordForm";
 
 export default function RootLayout({children}) {
     return (
         <html lang="en">
             <body>
-                <main>       
+                <main>
+                    <ResetPassword/>
                     {children}
-                    <RegisterForm></RegisterForm>
                 </main>
             </body>
         </html>
