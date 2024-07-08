@@ -9,8 +9,6 @@ async function connectDB() {
   try {
     await mongoose.connect(url, {
       dbName: dbName,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
     });
     console.log('MongoDB Connected:', url);
   } catch (error) {
