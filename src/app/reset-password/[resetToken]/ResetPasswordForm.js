@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter from next/router
+import { useRouter, useParams } from 'next/navigation'; // Import useRouter from next/router
 import { Poppins } from 'next/font/google'; // Import Poppins font
 import { resetPassword } from '../../../utils/api'; // Import resetPassword function from api.js
 
@@ -18,18 +18,35 @@ const poppinsBold = Poppins({
 
 const ResetPasswordForm = () => {
   const router = useRouter(); // Menggunakan useRouter dari next/router
+  const params = useParams(); // Menggunakan useParams dari next/router
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Ambil token dari URL path
   useEffect(() => {
-    // Handle kasus jika router.query.resetToken tidak terdefinisi saat komponen pertama kali di-render
-    if (!router.query?.resetToken) {
+    const pathSegments = window.location.pathname.split('/');
+    const tokenFromPath = pathSegments[pathSegments.length - 1];
+
+    console.log('Token from path:', tokenFromPath); // Log untuk memeriksa token dari URL
+
+    if (tokenFromPath) {
+      // Lakukan sesuatu dengan tokenFromPath jika perlu
+    } else {
+      // Redirect ke halaman not found jika token tidak ada
+      console.log('Token tidak ditemukan, redirect ke /not-found');
+      router.push('/not-found');
+    }
+  }, [router]);
+
+  // Handle kasus jika router.query.resetToken tidak terdefinisi saat komponen pertama kali di-render
+  useEffect(() => {
+    if (!params.resetToken) {
       // Contoh: Redirect ke halaman lain jika resetToken tidak ditemukan
       router.push('/not-found'); // Gantilah dengan halaman yang sesuai
     }
-  }, [router.query?.resetToken]);
+  }, [params.resetToken]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,7 +59,9 @@ const ResetPasswordForm = () => {
     setLoading(true);
 
     try {
-      const resetToken = router.query?.resetToken; // Ambil resetToken dari URL menggunakan optional chaining
+      const resetToken = params.resetToken; // Ambil resetToken dari URL menggunakan optional chaining
+
+      console.log('Token:', resetToken); // Log untuk memeriksa token
 
       // Panggil fungsi resetPassword dengan resetToken dan newPassword
       await resetPassword(resetToken, password);
