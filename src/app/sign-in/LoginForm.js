@@ -39,7 +39,7 @@ const LoginForm = () => {
     <div className="min-h-screen flex bg-gray-100">
       <div className="w-1/2 flex flex-col items-center justify-center p-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-4">Cendikiawan Aswaja</h1>
-        <p className="text-lg text-gray-700 mb-8">Menginspirasi Melalui Pengetahuan, Membangun Bersama Ajaran Aswaja</p>
+        <p className="text-lg text-center text-gray-700 mb-8">Menginspirasi Melalui Pengetahuan, Membangun Bersama Ajaran Aswaja</p>
       </div>
       <div className="w-1/2 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
