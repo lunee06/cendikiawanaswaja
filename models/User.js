@@ -21,6 +21,9 @@ const UserSchema = new mongoose.Schema({
   verificationToken: {
     type: String,
   },
+  resetToken: {  // Tambahkan bidang resetToken di sini
+    type: String,
+  },
 });
 
 // Membuat indeks untuk email

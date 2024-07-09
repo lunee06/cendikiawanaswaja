@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 
-const url = 'mongodb+srv://andis:andis@cluster0.vkduecp.mongodb.net/?retryWrites=true&w=majority';
+const url = process.env.MONGO_URI;
 const dbName = 'forumdb'; // Sesuaikan dengan nama database Anda
 
 async function connectDB() {
