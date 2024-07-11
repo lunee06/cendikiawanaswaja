@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { loginUser } from '../../utils/api'; // Sesuaikan path sesuai struktur proyek Anda
 import { useRouter } from 'next/navigation'; // Import useRouter untuk navigasi
+import Cookies from 'js-cookie'; // Import js-cookie untuk manipulasi cookie
+import Link from 'next/link';
+
 
 const LoginForm = () => {
   const router = useRouter(); // Pastikan ini digunakan dalam komponen yang dirender di sisi klien
@@ -8,6 +11,15 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(false); // State untuk "Ingat Saya"
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // State untuk menandai status login
+
+  useEffect(() => {
+    // Cek apakah ada cookie authToken yang tersimpan saat komponen mount
+    const authToken = Cookies.get('authToken');
+    if (authToken) {
+      setIsLoggedIn(true); // Set isLoggedIn menjadi true jika authToken ada
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,8 +31,13 @@ const LoginForm = () => {
       // Misalnya, jika respons dari API berisi token atau informasi penting lainnya
       console.log('Login Berhasil:', data);
 
+      // Simpan token dalam cookie dengan nama 'authToken' (misalnya)
+      Cookies.set('authToken', data.token, { expires: 7 }); // expires: 7 berarti cookie akan kadaluarsa dalam 7 hari
+
+      setIsLoggedIn(true); // Set isLoggedIn menjadi true setelah berhasil login
+
       // Redirect ke dashboard atau halaman lain setelah login berhasil
-      router.push('/dashboard');
+      router.push('/');
     } catch (error) {
       if (error.response) {
         // Jika respons dari API memiliki status 401 (Unauthorized)
@@ -34,6 +51,8 @@ const LoginForm = () => {
       }
     }
   };
+
+
 
   return (
     <div className="min-h-screen flex bg-gray-100">
