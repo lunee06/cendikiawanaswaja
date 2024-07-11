@@ -19,10 +19,10 @@ const {
     createComment,
     getCommentsByPostId,
     createReply
-} = require('./controllers/forumController');
+} = require('./controllers/questionController');
 
 const app = express();
-const port = process.env.PORT || 3000; // Tambahkan env variable untuk port
+const port = process.env.PORT; // Tambahkan env variable untuk port
 
 // Middleware
 app.use(cors());
