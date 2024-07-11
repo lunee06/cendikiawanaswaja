@@ -7,7 +7,8 @@ const multer = require('multer');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const cors = require('cors');
-const connectDB = require('./db');
+const { connectDB } = require('./db'); // Mengimpor dengan destructuring
+
 const {
     getAllQuestions,
     createQuestion,
@@ -21,8 +22,7 @@ const {
 } = require('./controllers/forumController');
 
 const app = express();
-const port = process.env.PORT; // Tambahkan env variable untuk port
-
+const port = process.env.PORT || 3000; // Tambahkan env variable untuk port
 
 // Middleware
 app.use(cors());
@@ -39,6 +39,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
 
 // Load file YAML
 const swaggerDocument = YAML.load(path.join(__dirname, 'api-docs.yaml'));

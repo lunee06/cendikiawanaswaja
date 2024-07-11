@@ -65,6 +65,11 @@ async function createQuestion(req, res, next) {
         imageUrl = req.file.path;
     }
 
+    // Pastikan title, description, dan tags tidak kosong
+    if (!title || !description || !tagsArray.length) {
+        return res.status(400).json({ error: 'Title, description, and tags are required' });
+    }
+
     try {
         const db = getDB();
         const result = await db.collection('questions').insertOne({ 
@@ -85,19 +90,16 @@ async function createQuestion(req, res, next) {
                 imageUrl, 
                 createdAt 
             };
-            const formattedQuestion = {
-                ...question,
-                formattedCreatedAt: formatTimestamp(question.createdAt)
-            };
-            res.json({ message: "Question created successfully", question: formattedQuestion });
+            res.json({ message: "Question created successfully", question });
         } else {
             throw new Error('Failed to insert question');
         }
     } catch (error) {
-        console.error('Error creating question in MongoDB:', error);
-        res.status(500).json({ error: "Failed to create question" });
+        console.error('Error creating question:', error);
+        res.status(500).json({ error: 'Failed to create question' });
     }
 }
+
 
 async function getPopularTags(req, res, next) {
     try {
@@ -296,6 +298,9 @@ async function createReply(req, res, next) {
         res.status(500).json({ error: 'Failed to add reply' });
     }
 }
+
+
+
 
 module.exports = {
     getAllQuestions,

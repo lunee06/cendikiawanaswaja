@@ -1,5 +1,3 @@
-// db.js
-
 const mongoose = require('mongoose');
 
 const url = process.env.MONGO_URI;
@@ -8,7 +6,7 @@ const dbName = 'forumdb'; // Sesuaikan dengan nama database Anda
 async function connectDB() {
   try {
     await mongoose.connect(url, {
-      dbName: dbName,
+      dbName: dbName
     });
     console.log('MongoDB Connected:', url);
   } catch (error) {
@@ -17,4 +15,12 @@ async function connectDB() {
   }
 }
 
-module.exports = connectDB;
+const getDB = () => {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection.db;
+  } else {
+    throw new Error('Database not initialized');
+  }
+};
+
+module.exports = { connectDB, getDB };
