@@ -433,39 +433,6 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// Endpoint untuk reset password berdasarkan token
-router.post('/reset-password/:token', async (req, res) => {
-  const { token } = req.params;
-  const { newPassword } = req.body;
-
-  if (!newPassword) {
-    return res.status(400).json({ msg: 'New password is required' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const { email } = decoded;
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ msg: 'Invalid or expired token' });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-    user.password = hashedPassword;
-    user.resetToken = null;
-    await user.save();
-
-    res.status(200).json({ msg: 'Password reset berhasil' });
-  } catch (err) {
-    console.error('Error during password reset:', err);
-    res.status(500).json({ msg: 'Server error' });
-  }
-});
-
-
 
 // Endpoint untuk reset password berdasarkan token
 router.post('/reset-password/:token', async (req, res) => {
@@ -500,14 +467,48 @@ router.post('/reset-password/:token', async (req, res) => {
       return res.status(400).json({ msg: 'Invalid or expired token' });
     }
 
-    res.status(200).json({ msg: 'Password reset berhasil' });
+    res.status(200).json({ msg: 'Password reset successful' });
   } catch (err) {
     console.error('Error during password reset:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 });
 
+router.get('/check-reset-token/:token', async (req, res) => {
+  const { token } = req.params;
 
+  try {
+    const user = await User.findOne({ resetToken: token }).lean().exec();
 
+    if (!user || !user.resetToken) {
+      return res.status(200).json({ exists: false });
+    }
+
+    res.status(200).json({ exists: true });
+  } catch (err) {
+    console.error(`Error checking reset token ${token}:`, err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// Route to check if a user is verified
+router.get('/check-is-verified', async (req, res) => {
+  const { email } = req.query;
+
+  try {
+    if (!email || !validator.isEmail(email)) {
+      return res.status(400).json({ msg: 'Email is required and must be valid' });
+    }
+
+    const user = await User.findOne({ email }).lean().exec();
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    res.status(200).json({ isVerified: user.isVerified });
+  } catch (err) {
+    handleServerError(res, err);
+  }
+});
 
 module.exports = router;
