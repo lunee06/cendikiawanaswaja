@@ -110,3 +110,24 @@ export const searchQuestions = async (keyword) => {
     throw error;
   }
 };
+
+export const checkResetToken = async (resetToken) => {
+  try {
+    const response = await axiosInstance.get(`/api/auth/check-reset-token/${resetToken}`);
+    return response.data.exists;
+  } catch (error) {
+    throw error.response.data.msg || error.message;
+  }
+};
+
+// New function to check if a user is verified
+export const checkIsVerified = async (email) => {
+  try {
+    const response = await axiosInstance.get(`/api/auth/check-is-verified`, {
+      params: { email }
+    });
+    return response.data.isVerified;
+  } catch (error) {
+    throw error.response.data.msg || error.message;
+  }
+};

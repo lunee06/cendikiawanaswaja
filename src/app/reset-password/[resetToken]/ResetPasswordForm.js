@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation'; // Import useRouter from next/router
 import { Poppins } from 'next/font/google'; // Import Poppins font
-import { resetPassword } from '../../../utils/api'; // Import resetPassword function from api.js
+import { resetPassword, checkResetToken } from '../../../utils/api'; // Import resetPassword dan checkResetToken function from api.js
 
 // Konfigurasi font Poppins dengan subset Latin dan display swap
 const poppinsRegular = Poppins({
@@ -32,13 +32,30 @@ const ResetPasswordForm = () => {
     console.log('Token from path:', tokenFromPath); // Log untuk memeriksa token dari URL
 
     if (tokenFromPath) {
-      // Lakukan sesuatu dengan tokenFromPath jika perlu
+      // Lakukan validasi token di sini
+      validateResetToken(tokenFromPath);
     } else {
       // Redirect ke halaman not found jika token tidak ada
       console.log('Token tidak ditemukan, redirect ke /not-found');
       router.push('/not-found');
     }
   }, [router]);
+
+  // Validasi reset token saat komponen dimuat pertama kali
+  const validateResetToken = async (token) => {
+    try {
+      const isValid = await checkResetToken(token);
+
+      if (!isValid) {
+        // Redirect jika token tidak valid
+        console.log('Token tidak valid, redirect ke /not-found');
+        router.push('/not-found');
+      }
+    } catch (error) {
+      console.error('Error validating reset token:', error);
+      setError('Terjadi kesalahan saat memvalidasi token reset.');
+    }
+  };
 
   // Handle kasus jika router.query.resetToken tidak terdefinisi saat komponen pertama kali di-render
   useEffect(() => {

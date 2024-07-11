@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Poppins } from 'next/font/google'; // Import Poppins font
-import { forgotPassword } from '../../utils/api'; // Import forgotPassword function
+import { forgotPassword, checkIsVerified } from '../../utils/api'; // Import forgotPassword and checkIsVerified functions
 
 // Konfigurasi font Poppins dengan subset Latin dan display swap
 const poppinsRegular = Poppins({
@@ -24,6 +24,13 @@ const ForgotPasswordForm = () => {
     e.preventDefault();
 
     try {
+      // Check if the email is verified
+      const isVerified = await checkIsVerified(email);
+      if (!isVerified) {
+        setError('Email belum diverifikasi. Silakan verifikasi email Anda terlebih dahulu.');
+        return;
+      }
+
       // Call forgotPassword function with email state
       await forgotPassword(email);
       // Clear email input and set success message
