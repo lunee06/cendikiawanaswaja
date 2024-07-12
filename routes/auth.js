@@ -6,6 +6,32 @@ const nodemailer = require('nodemailer');
 const router = express.Router();
 const validator = require('validator'); // Tambahkan ini di bagian atas file
 
+// Middleware untuk verifikasi token JWT
+const verifyToken = (req, res, next) => {
+  const authHeader = req.header('Authorization');
+  
+  if (!authHeader) {
+    console.error('Authorization header is missing');
+    return res.status(401).json({ msg: 'No token, authorization denied' });
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+
+  if (!token) {
+    console.error('Token is missing after replacing Bearer');
+    return res.status(401).json({ msg: 'No token, authorization denied' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded.user;
+    next();
+  } catch (err) {
+    console.error('Token is not valid:', err);
+    res.status(401).json({ msg: 'Token is not valid' });
+  }
+};
+
 
 // Error handling middleware
 const handleServerError = (res, err) => {
@@ -367,6 +393,48 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.post('/login-admin', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    let user = await User.findOne({ email }).lean().exec();
+    if (!user) {
+      return res.status(400).json({ msg: 'Invalid credentials' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: 'Invalid credentials' });
+    }
+
+    if (!user.isVerified) {
+      return res.status(400).json({ msg: 'Email not verified' });
+    }
+
+    if (!user.isAdmin) {
+      return res.status(403).json({ msg: 'Anda tidak memiliki akses sebagai admin.' });
+    }
+
+    // Payload untuk token JWT
+    const payload = {
+      user: {
+        id: user._id,
+      },
+    };
+
+    // Membuat token JWT
+    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
+      if (err) {
+        handleServerError(res, err);
+      } else {
+        res.json({ token });
+      }
+    });
+  } catch (err) {
+    handleServerError(res, err);
+  }
+});
+
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
 
@@ -506,6 +574,18 @@ router.get('/check-is-verified', async (req, res) => {
     }
 
     res.status(200).json({ isVerified: user.isVerified });
+  } catch (err) {
+    handleServerError(res, err);
+  }
+});
+
+router.get('/profile', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password').lean().exec();
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    res.json(user);
   } catch (err) {
     handleServerError(res, err);
   }
