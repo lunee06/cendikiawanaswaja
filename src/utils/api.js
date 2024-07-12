@@ -7,20 +7,16 @@ const axiosInstance = axios.create({
   baseURL: API_URL,
 });
 
-const fetchUserData = async () => {
-  const token = getTokenCookie();
-
+export const fetchUserData = async (token) => {
   try {
-    const response = await axios.get('/api/user', {
+    const response = await axiosInstance.get('/api/auth/profile', {
       headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        Authorization: `Bearer ${token}`
+      }
     });
-
     return response.data;
   } catch (error) {
-    console.error('Error fetching user data:', error);
-    throw error;
+    throw error.response.data.msg || error.message;
   }
 };
 
@@ -39,6 +35,21 @@ export const loginUser = async (credentials) => {
     return response.data;
   } catch (error) {
     throw error.response.data.msg || error.message;
+  }
+};
+
+export const loginAdmin = async (credentials) => {
+  try {
+    const response = await axiosInstance.post('/api/auth/login-admin', credentials);
+    
+    // Ambil data dari respons
+    const { token } = response.data;
+
+    // Kembalikan data jika login berhasil
+    return { token };
+  } catch (error) {
+    // Tangani kesalahan dari API dan lemparkan error dengan pesan yang sesuai
+    throw new Error(error.response?.data?.msg || 'Terjadi kesalahan saat login.'); // Pesan kesalahan lebih umum
   }
 };
 

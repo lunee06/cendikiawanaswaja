@@ -1,18 +1,34 @@
 'use client';
-import Cookies from 'js-cookie'; // Import js-cookie untuk manipulasi cookie
-import { useRouter } from 'next/navigation'; // Import useRouter untuk navigasi
+import Cookies from 'js-cookie';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ProtectedRoute from "./components/ProteectedRoute";
-
+import { fetchUserData } from '../utils/api'; // Adjust the import path according to your project structure
 
 export default function Home() {
-  const router = useRouter(); // Initialize useRouter untuk navigasi
-  
-const handleLogout = () => {
-  Cookies.remove('authToken'); // Hapus cookie authToken saat logout
-  router.push('/sign-in'); // Redirect ke halaman sign-in setelah logout
-};
+  const [name, setname] = useState('');
+  const router = useRouter();
 
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const token = Cookies.get('authToken');
+        if (token) {
+          const userData = await fetchUserData(token);
+          setname(userData.name);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
 
+    getUserData();
+  }, []);
+
+  const handleLogout = () => {
+    Cookies.remove('authToken');
+    router.push('/sign-in');
+  };
 
   return (
     <ProtectedRoute>
@@ -20,7 +36,9 @@ const handleLogout = () => {
         <div className="max-w-md w-full space-y-8">
           <div>
             <img className="mx-auto h-12 w-auto" src="/img/checkmark.png" alt="Logo" />
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Anda sudah login</h2>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Welcome, {name || 'User'}!
+            </h2>
           </div>
           <div className="mt-8">
             <div className="text-center">
