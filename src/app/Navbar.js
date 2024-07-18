@@ -23,7 +23,7 @@ export default function Navbar() {
         <button
           onClick={toggleMenu}
           type="button"
-          className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
+          className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg xl:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
           aria-label="Open main menu"
         >
           <span className="sr-only">Open main menu</span>
@@ -44,10 +44,10 @@ export default function Navbar() {
           </svg>
         </button>
         <div
-          className={`w-full md:flex md:items-center md:w-auto ${isMenuOpen ? 'block' : 'hidden'}`}
+          className={`w-full xl:flex xl:items-center xl:w-auto ${isMenuOpen ? 'block' : 'hidden'}`}
           id="navbar-dropdown"
         >
-          <ul className="flex flex-col md:flex-row font-medium p-4 md:p-0 mt-4 md:mt-0 border-t md:border-0 border-gray-100 rounded-lg bg-gray-50 md:bg-white md:space-x-8 rtl:space-x-reverse">
+          <ul className="flex flex-col xl:flex-row font-medium p-4 xl:p-0 mt-4 xl:mt-0 border-t xl:border-0 border-gray-100 rounded-lg bg-gray-50 xl:bg-white xl:space-x-8 rtl:space-x-reverse">
             <li>
               <a href="#" className="block py-2 px-1 text-sm text-[#1F384C] rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-[#5A67BA]">
                 Crowdfunding
@@ -78,7 +78,7 @@ export default function Navbar() {
                  Konferensi
               </a>
             </li>
-            <li className="relative inline-block md:hidden">
+            <li className="relative inline-block xl:hidden">
               <button
                 id="dropdownNavbarLink"
                 onClick={toggleDropdown}
@@ -105,7 +105,7 @@ export default function Navbar() {
               </button>
               <div
                 id="dropdownNavbar"
-                className={`z-10 ${isOpen ? 'block' : 'hidden'} absolute mt-2 right-0 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 md:hidden`}
+                className={`z-10 ${isOpen ? 'block' : 'hidden'} absolute mt-2 right-0 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 xl:hidden`}
               >
                 <ul className="py-2 text-sm text-gray-700" aria-labelledby="dropdownNavbarLink">
                   <li>
@@ -122,11 +122,11 @@ export default function Navbar() {
               </div>
             </li>
           </ul>
-          <div className="hidden md:block">
+          <div className="hidden xl:block">
             <button
               id="dropdownNavbarLink"
               onClick={toggleDropdown}
-              className="flex items-center justify-between py-2 px-1 text-sm text-[#1F384C] rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-[#5A67BA] md:w-auto"
+              className="flex items-center justify-between py-2 px-1 text-sm text-[#1F384C] rounded hover:bg-gray-100 xl:hover:bg-transparent xl:border-0 xl:hover:text-[#5A67BA] xl:w-auto"
               aria-haspopup="true"
               aria-expanded={isOpen ? 'true' : 'false'}
             >

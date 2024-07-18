@@ -12,6 +12,9 @@ module.exports = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      screens: {
+        'custom-md-lg': '900px', // Definisikan ukuran custom di sini
+      },
     },
   },
   plugins: [],
