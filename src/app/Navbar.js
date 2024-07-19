@@ -1,23 +1,33 @@
 "use client"; // Menambahkan directive untuk menunjukkan bahwa ini adalah komponen client-side
 
-import { useState } from 'react'; // Import useState for managing state
+import { useState, useRef } from 'react';
 
-export default function Navbar() {
+const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // State for mobile menu
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const buttonRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const toggleDropdown = () => {
-    setIsOpen(!isOpen);
+    setIsOpen(prev => {
+      const newState = !prev;
+      console.log('Dropdown toggled:', newState);
+      return newState;
+    });
   };
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    setIsMenuOpen(prev => {
+      const newState = !prev;
+      console.log('Menu toggled:', newState);
+      return newState;
+    });
   };
 
   return (
     <nav className="bg-white border-b border-[#EEEEEE]">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
+        <a href="/" className="flex items-center justify-start space-x-3 rtl:space-x-reverse">
           <span className="self-center text-2xl font-semibold whitespace-nowrap text-[#5A67BA]">Cendekiawan Aswaja</span>
         </a>
         <button
@@ -75,14 +85,15 @@ export default function Navbar() {
             </li>
             <li>
               <a href="#" className="block py-2 px-1 mr-6 text-sm text-[#1F384C] rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-[#5A67BA]">
-                 Konferensi
+                Konferensi
               </a>
             </li>
-            <li className="relative inline-block xl:hidden">
+            <li className="relative">
               <button
+                ref={buttonRef}
                 id="dropdownNavbarLink"
                 onClick={toggleDropdown}
-                className="flex items-center justify-between w-full py-2 px-1 text-sm text-[#1F384C] rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-[#5A67BA] md:w-auto"
+                className="flex items-center justify-between py-2 px-1 text-sm text-[#1F384C] rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-[#5A67BA]"
                 aria-haspopup="true"
                 aria-expanded={isOpen ? 'true' : 'false'}
               >
@@ -104,8 +115,10 @@ export default function Navbar() {
                 </svg>
               </button>
               <div
+                ref={dropdownRef}
                 id="dropdownNavbar"
-                className={`z-10 ${isOpen ? 'block' : 'hidden'} absolute mt-2 right-0 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 xl:hidden`}
+                className={`z-10 ${isOpen ? 'block' : 'hidden'} absolute bg-white divide-y divide-gray-100 rounded-lg shadow w-44`}
+                style={{ top: '100%', left: 0 }}
               >
                 <ul className="py-2 text-sm text-gray-700" aria-labelledby="dropdownNavbarLink">
                   <li>
@@ -122,51 +135,10 @@ export default function Navbar() {
               </div>
             </li>
           </ul>
-          <div className="hidden xl:block">
-            <button
-              id="dropdownNavbarLink"
-              onClick={toggleDropdown}
-              className="flex items-center justify-between py-2 px-1 text-sm text-[#1F384C] rounded hover:bg-gray-100 xl:hover:bg-transparent xl:border-0 xl:hover:text-[#5A67BA] xl:w-auto"
-              aria-haspopup="true"
-              aria-expanded={isOpen ? 'true' : 'false'}
-            >
-              Nama Akun
-              <svg
-                className={`w-2.5 h-2.5 ml-2.5 ${isOpen ? 'transform rotate-180' : ''}`}
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 10 6"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m1 1 4 4 4-4"
-                />
-              </svg>
-            </button>
-            <div
-              id="dropdownNavbar"
-              className={`z-10 ${isOpen ? 'block' : 'hidden'} absolute mt-2 right-0 bg-white divide-y divide-gray-100 rounded-lg shadow w-44`}
-            >
-              <ul className="py-2 text-sm text-gray-700" aria-labelledby="dropdownNavbarLink">
-                <li>
-                  <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                    Profil
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="block px-4 py-2 hover:bg-gray-100">
-                    Logout
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
     </nav>
   );
-}
+};
+
+export default Navbar;

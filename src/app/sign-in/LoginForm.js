@@ -53,10 +53,11 @@ const LoginForm = () => {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-gray-100">
-  <div className="lg:w-1/2 flex flex-col items-center lg:items-start justify-center p-8 bg-gray-100">
-    <h1 className="text-4xl font-bold text-gray-800 mb-4 text-center lg:text-left">Cendikiawan Aswaja</h1>
-    <p className="text-lg text-center lg:text-left text-gray-700 mb-8">Menginspirasi Melalui Pengetahuan, Membangun Bersama Ajaran Aswaja</p>
+  <div className="lg:w-1/2 flex flex-col items-center lg:items-center justify-center p-8 bg-gray-100">
+    <h1 className="text-4xl font-bold text-gray-800 mb-4 text-left lg:text-center">Cendikiawan Aswaja</h1>
+    <p className="text-lg text-left lg:text-center text-gray-700 mb-8">Menginspirasi Melalui Pengetahuan, Membangun Bersama Ajaran Aswaja</p>
   </div>
+
       <div className="lg:w-1/2 flex items-center justify-center">
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">Masuk</h2>
